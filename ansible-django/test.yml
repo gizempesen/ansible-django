@@ -1,0 +1,12 @@
+---
+- hosts: servers
+
+  #Gather facts or a 'setup' task will connect to the managed host
+  gather_facts: true
+  become: yes
+
+  tasks:
+    - debug:
+        var: ansible_facts["bios_version"]
+
+

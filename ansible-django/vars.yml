@@ -1,0 +1,40 @@
+---
+project_name: django_hello
+
+# the base path to install to.
+install_root: /srv
+
+# the correct wsgi_module value would be `hello.wsgi`
+wsgi_module: hello.wsgi
+
+# PYTHONPATH.
+pythonpath: "{{ install_root }}/{{ project_name }}/hello/apps"
+
+# the git repository URL for the project
+project_repo: git@github.com:mrichnu/django-hello-world.git
+    
+# a private key that has access to the repository URL
+ssh_private_key: ~/.ssh/id_rsa
+
+# django project's STATIC_ROOT settings.
+# STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'static'))
+static_root: "{{ install_root }}/{{ project_name }}/static"
+
+# server
+server_name: 192.168.29.128
+
+# settings.py:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'HOST': 'localhost',
+#         'NAME': 'hello',
+#         'USER': 'hello',
+#         'PASSWORD': 'changeme',
+#     }
+# }
+db_name: hello
+db_user: hello
+db_password: changeme
+
+

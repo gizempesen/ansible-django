@@ -1,0 +1,71 @@
+---
+- hosts: servers
+  vars_files:
+    - vars.yml
+  #Gather facts or a 'setup' task will connect to the managed host
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: clone ull project repo
+      git:
+        repo: https://github.com/mrichnu/django-hello-world.git
+        dest: "{{ install_root }}/{{ project_name }}"
+        accept_hostkey: yes
+      notify:
+      #Gunicorn "Green Unicorn"  Python Web Server Gateway Interface (WSGI) HTTP server.
+      - restart gunicorn
+
+    - name: Install Django
+      pip:
+        name: Django==1.8.4
+      notify:
+        - restart gunicorn
+
+    - name: Install python packages
+      apt: name='{{ item }}'
+      with_items:
+        - postgresql
+        - postgresql-contrib
+        - libpq-dev
+        #pip install django psycopg2
+        - python-psycopg2
+      notify:
+      - restart gunicorn
+
+    - name: copy nginx config
+      template:
+        src: files/nginx.j2
+        dest: /etc/nginx/sites-enabled/{{ project_name }}.conf
+      notify:
+      - restart nginx
+
+    - name: django migrate
+      django_manage:
+        command: migrate
+        app_path: "{{ install_root }}/{{ project_name }}"
+        pythonpath: "{{ pythonpath }}"
+
+    - name: django collectstatic
+      django_manage:
+        command: collectstatic
+        app_path: "{{ install_root }}/{{ project_name }}"
+        pythonpath: "{{ pythonpath }}"
+
+    - name: copy gunicorn config
+      template:
+        src: files/gunicorn.j2
+        dest: /etc/init/gunicorn.conf
+      notify:
+      - restart gunicorn
+
+    - name: make sure nginx server is running
+      service: name=nginx state=started enabled=yes
+
+  handlers: 
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+    - name: restart gunicorn
+      service: name=gunicorn state=restarted
+# vim:ft=ansible:
